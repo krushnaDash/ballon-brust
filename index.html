@@ -9,7 +9,7 @@
   margin: 0;
   padding: 0;
   overflow: hidden;
-  background: #87CEEB; /* Sky blue background */
+  background: #87eba7; /* Sky blue background */
 }
 
 #game-container {
@@ -36,11 +36,11 @@
 
 .animal {
   position: absolute;
-  width: 80px;
-  height: 80px;
-  object-fit: contain;
-  transition: transform 2s ease-out, opacity 2s ease-out;
+  width: 50px; /* Adjust size as needed */
+  height: 50px; /* Adjust size as needed */
+  transition: transform 6s ease-out, opacity 3s ease-out;
 }
+
 
 @keyframes floatUp {
   0% {
@@ -50,6 +50,48 @@
     transform: translateY(-150px); /* Move above the screen */
   }
 }
+
+/* Balloon burst animation */
+@keyframes burst {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(0);
+    opacity: 0;
+  }
+}
+
+.burst {
+  animation: burst 0.5s ease-out forwards;
+}
+
+/* Burst particles */
+.particle {
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  background-color: currentColor;
+  border-radius: 50%;
+  animation: particle-fly 0.6s ease-out forwards;
+}
+
+@keyframes particle-fly {
+  0% {
+    transform: translate(0, 0) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--particle-x, 0), var(--particle-y, 0)) scale(0.5);
+    opacity: 0;
+  }
+}
+
   </style>
 </head>
 <body>
@@ -116,17 +158,56 @@ function burstBalloon(balloon, color) {
   const sound = document.getElementById(sounds[color]);
   sound.play();
 
+  // Add the burst animation
+  balloon.classList.add('burst');
+
+  // Create burst particles
+  for (let i = 0; i < 8; i++) {
+    const particle = document.createElement('div');
+    particle.className = 'particle';
+    particle.style.left = `${balloon.offsetLeft + balloon.offsetWidth / 2}px`; // Centered horizontally
+    particle.style.top = `${balloon.offsetTop + balloon.offsetHeight / 2}px`; // Centered vertically
+    particle.style.backgroundColor = balloon.style.backgroundColor;
+
+    // Randomized particle trajectory
+    const angle = Math.random() * 360; // Angle in degrees
+    const distance = Math.random() * 50 + 50; // Random distance (50px to 100px)
+    particle.style.setProperty('--particle-x', `${distance * Math.cos((angle * Math.PI) / 180)}px`);
+    particle.style.setProperty('--particle-y', `${distance * Math.sin((angle * Math.PI) / 180)}px`);
+
+    container.appendChild(particle);
+
+    // Remove particle after animation
+    setTimeout(() => {
+      if (container.contains(particle)) {
+        container.removeChild(particle);
+      }
+    }, 600);
+  }
+
+  // Remove the balloon after the animation
+  setTimeout(() => {
+    if (container.contains(balloon)) {
+      container.removeChild(balloon);
+    }
+  }, 500);
+
   // Create an animal image at the balloon's position
   const animal = document.createElement('img');
   animal.className = 'animal';
   animal.src = animals[color];
   animal.style.left = `${balloon.offsetLeft}px`; // Same horizontal position as the balloon
-  animal.style.top = `${balloon.offsetTop}px`;  // Same vertical position as the balloon
+  animal.style.top = `${balloon.offsetTop}px`; // Same vertical position as the balloon
   container.appendChild(animal);
+
+  // Calculate the bottom of the screen
+  const screenHeight = window.innerHeight;
+  const animalStartTop = balloon.offsetTop;
+  const distanceToBottom = screenHeight - animalStartTop;
 
   // Animate the animal dropping down and fading out
   setTimeout(() => {
-    animal.style.transform = 'translateY(200px)';
+    animal.style.transform = `translateY(${distanceToBottom}px)`;
     animal.style.opacity = '0';
   }, 100);
 
@@ -135,11 +216,10 @@ function burstBalloon(balloon, color) {
     if (container.contains(animal)) {
       container.removeChild(animal);
     }
-  }, 2000);
-
-  // Remove balloon immediately
-  container.removeChild(balloon);
+  }, 3000); // Match the animation duration (3s) for a smooth effect
 }
+
+
 
   function startGame() {
     setInterval(createBalloon, 1500); // Add a new balloon every second
