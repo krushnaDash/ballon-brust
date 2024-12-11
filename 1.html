@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Balloon Burst Game</title>
+    <style>
+        /* Set background GIF for the whole page */
+        body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background: #0b024e; /* Sky blue background */
+}
+
+        /* Game container */
+        #game-container {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+        }
+
+        /* Balloon burst animation */
+        @keyframes burst {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1.2);
+                opacity: 0.8;
+            }
+            100% {
+                transform: scale(0);
+                opacity: 0;
+            }
+        }
+
+        .burst {
+            animation: burst 0.5s ease-out forwards;
+        }
+
+        /* Balloon */
+        .balloon {
+            position: absolute;
+            bottom: -100px; /* Start below the screen */
+            width: 50px;
+            height: 70px;
+            border-radius: 50%;
+            background-color: red;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        /* Letter falling effect */
+        .letter {
+            position: absolute;
+            font-size: 50px;
+            color: #fff; /* Adjust color to your preference */
+            font-weight: bold;
+            transition: transform 3s ease-out, opacity 3s ease-out;
+        }
+
+        /* Burst particles */
+        .particle {
+            position: absolute;
+            width: 5px;
+            height: 5px;
+            background-color: currentColor;
+            border-radius: 50%;
+            animation: particle-fly 0.6s ease-out forwards;
+        }
+
+        @keyframes particle-fly {
+            0% {
+                transform: translate(0, 0) scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(var(--particle-x, 0), var(--particle-y, 0)) scale(0.5);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <!-- Balloons will be added dynamically here -->
+    </div>
+
+    <!-- Sound files for each letter -->
+    <audio id="a" src="sounds/a.mp3"></audio>
+    <audio id="b" src="sounds/b.mp3"></audio>
+    <audio id="c" src="sounds/c.mp3"></audio>
+    <audio id="d" src="sounds/d.mp3"></audio>
+    <audio id="e" src="sounds/e.mp3"></audio>
+    <audio id="f" src="sounds/f.mp3"></audio>
+    <audio id="g" src="sounds/g.mp3"></audio>
+    <audio id="h" src="sounds/h.mp3"></audio>
+    <audio id="i" src="sounds/i.mp3"></audio>
+    <audio id="j" src="sounds/j.mp3"></audio>
+    <audio id="k" src="sounds/k.mp3"></audio>
+    <audio id="l" src="sounds/l.mp3"></audio>
+    <audio id="m" src="sounds/m.mp3"></audio>
+    <audio id="n" src="sounds/n.mp3"></audio>
+    <audio id="o" src="sounds/o.mp3"></audio>
+    <audio id="p" src="sounds/p.mp3"></audio>
+    <audio id="q" src="sounds/q.mp3"></audio>
+    <audio id="r" src="sounds/r.mp3"></audio>
+    <audio id="s" src="sounds/s.mp3"></audio>
+    <audio id="t" src="sounds/t.mp3"></audio>
+    <audio id="u" src="sounds/u.mp3"></audio>
+    <audio id="v" src="sounds/v.mp3"></audio>
+    <audio id="w" src="sounds/w.mp3"></audio>
+    <audio id="x" src="sounds/x.mp3"></audio>
+    <audio id="y" src="sounds/y.mp3"></audio>
+    <audio id="z" src="sounds/z.mp3"></audio>
+
+    <script>
+        // Sound files for balloons (colors)
+        const sounds = {
+            red: "a", // Example, you can change the sound association
+            blue: "b",
+            green: "c",
+            yellow: "d"
+        };
+
+        const container = document.getElementById('game-container');
+
+        // Function to create a balloon
+        function createBalloon() {
+            const balloon = document.createElement('div');
+            balloon.classList.add('balloon');
+            balloon.style.backgroundColor = getRandomColor(); // Assign random color
+            balloon.innerText = Math.floor(Math.random() * 10) + 1; // Random number from 1-10
+            balloon.style.left = Math.random() * window.innerWidth - 50 + 'px'; // Random horizontal position
+
+            // Add the balloon to the container
+            container.appendChild(balloon);
+
+            // Animate balloon to move up
+            let moveInterval = setInterval(() => {
+                balloon.style.bottom = parseInt(balloon.style.bottom) + 2 + 'px';
+                if (parseInt(balloon.style.bottom) > window.innerHeight) {
+                    clearInterval(moveInterval); // Stop moving up once the balloon reaches the top
+                    burstBalloon(balloon); // Trigger balloon burst when it reaches the top
+                }
+            }, 10);
+
+            // Add event listener to trigger balloon burst
+            balloon.addEventListener('click', () => {
+                burstBalloon(balloon); // Trigger burst animation and letter drop
+            });
+        }
+
+        // Function to trigger balloon burst and letter drop
+        function burstBalloon(balloon) {
+            const balloonColor = balloon.style.backgroundColor;
+            const sound = document.getElementById(sounds[balloonColor]);
+            sound.play();
+
+            // Add the burst animation
+            balloon.classList.add('burst');
+
+            // Create a random letter (A to Z)
+            const letter = String.fromCharCode(65 + Math.floor(Math.random() * 26)); // Random letter A-Z
+            const letterElement = document.createElement('div');
+            letterElement.className = 'letter';
+            letterElement.innerText = letter;
+            letterElement.style.left = `${balloon.offsetLeft}px`; // Same horizontal position as the balloon
+            letterElement.style.top = `${balloon.offsetTop}px`; // Same vertical position as the balloon
+            container.appendChild(letterElement);
+
+            // Calculate the bottom of the screen
+            const screenHeight = window.innerHeight;
+            const letterStartTop = balloon.offsetTop;
+            const distanceToBottom = screenHeight - letterStartTop;
+
+            // Animate the letter falling down and fading out
+            setTimeout(() => {
+                letterElement.style.transform = `translateY(${distanceToBottom}px)`;
+                letterElement.style.opacity = '0';
+            }, 100);
+
+            // Play the letter sound when clicked
+            letterElement.addEventListener('click', () => {
+                const letterSound = new Audio(`sounds/${letter.toLowerCase()}.mp3`);
+                letterSound.play();
+            });
+
+            // Remove balloon after animation
+            setTimeout(() => {
+                container.removeChild(balloon);
+            }, 500);
+
+            // Remove letter after animation ends
+            setTimeout(() => {
+                container.removeChild(letterElement);
+            }, 3000); // Match the animation duration (3s) for smooth effect
+        }
+
+        // Generate random color for balloons
+        function getRandomColor() {
+            const colors = ['red', 'blue', 'green', 'yellow'];
+            return colors[Math.floor(Math.random() * colors.length)];
+        }
+
+        // Start generating balloons periodically
+        setInterval(createBalloon, 1500); // Create a balloon every 1.5 seconds
+
+    </script>
+</body>
+</html>
