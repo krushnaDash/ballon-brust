@@ -11,7 +11,7 @@ az webapp deployment source config --name krushna-87-game --resource-group krush
 
 
 
-https://krushna-game.azurewebsites.net
+https://krushna-87-game.azurewebsites.net
 
 
 
